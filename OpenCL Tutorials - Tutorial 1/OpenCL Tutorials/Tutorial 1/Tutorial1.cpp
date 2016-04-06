@@ -10,16 +10,16 @@
 #include <CL\cl.hpp>
 #include "Utils.h"
 
+//Call to the kernel for min temperature function - minTemp
 int minTemperature(cl::Program program, cl::Buffer buffer_A, cl::Buffer buffer_B, cl::CommandQueue queue,
 	size_t vector_size, size_t vector_elements, vector<int> outputFloat, size_t local_size)
 {
 	// Setup and execute the kernel (i.e. device code)
-	cl::Kernel kernel_Min = cl::Kernel(program, "minTemp");//Minimum
+	cl::Kernel kernel_Min = cl::Kernel(program, "minTemp");
 
 	kernel_Min.setArg(0, buffer_A);
 	kernel_Min.setArg(1, buffer_B);
 	kernel_Min.setArg(2, cl::Local(1));
-
 	queue.enqueueNDRangeKernel(kernel_Min, cl::NullRange, cl::NDRange(vector_elements), cl::NDRange(local_size));
 
 	//Copy the result from device to host
@@ -28,54 +28,45 @@ int minTemperature(cl::Program program, cl::Buffer buffer_A, cl::Buffer buffer_B
 	return outputFloat[0];
 }
 
+//Call to the kernel for max temperature function - maxTemp
 int maxTemperature(cl::Program program, cl::Buffer buffer_A, cl::Buffer buffer_B, cl::CommandQueue queue,
 	size_t vector_size, size_t vector_elements, vector<int> outputFloat, size_t local_size)
 {
-	// Setup and execute the kernel (i.e. device code)
-	cl::Kernel kernel_Max = cl::Kernel(program, "maxTemp");//Maximum
+	cl::Kernel kernel_Max = cl::Kernel(program, "maxTemp");
 	kernel_Max.setArg(0, buffer_A);
 	kernel_Max.setArg(1, buffer_B);
 	kernel_Max.setArg(2, cl::Local(1));
-
 	queue.enqueueNDRangeKernel(kernel_Max, cl::NullRange, cl::NDRange(vector_elements), cl::NDRange(local_size));
-
-	//Copy the result from device to host
 	queue.enqueueReadBuffer(buffer_B, CL_TRUE, 0, vector_size, &outputFloat[0]);
 
 	return outputFloat[0];
 }
 
+//Call to the kernel for average temperature function - avgTemp
 int averageTemperature(cl::Program program, cl::Buffer buffer_A, cl::Buffer buffer_B, cl::CommandQueue queue,
 	size_t vector_size, size_t vector_elements, vector<int> outputFloat, size_t local_size)
 {
-	// Setup and execute the kernel (i.e. device code)
-	cl::Kernel kernel_Average = cl::Kernel(program, "avgTemp");//Average
-
+	cl::Kernel kernel_Average = cl::Kernel(program, "avgTemp");
 	kernel_Average.setArg(0, buffer_A);
 	kernel_Average.setArg(1, buffer_B);
 	kernel_Average.setArg(2, cl::Local(1));
-
 	queue.enqueueNDRangeKernel(kernel_Average, cl::NullRange, cl::NDRange(vector_elements), cl::NDRange(local_size));
-
-	//Copy the result from device to host
 	queue.enqueueReadBuffer(buffer_B, CL_TRUE, 0, vector_size, &outputFloat[0]);
 
 	return outputFloat[0];
 }
 
+//Call to the kernel for histogram function - hist_auto
 vector<int> histogram(cl::Program program, cl::Buffer buffer_A, cl::Buffer buffer_B, cl::CommandQueue queue,
 	size_t vector_size, size_t vector_elements, vector<int> outputFloat, size_t local_size, int count, int minval, int maxval)
 {
 	cl::Kernel kernel_Hist = cl::Kernel(program, "hist_auto");
-
 	kernel_Hist.setArg(0, buffer_A);
 	kernel_Hist.setArg(1, buffer_B);
 	kernel_Hist.setArg(2, count);
 	kernel_Hist.setArg(3, minval);
 	kernel_Hist.setArg(4, maxval);
-
 	queue.enqueueNDRangeKernel(kernel_Hist, cl::NullRange, cl::NDRange(vector_elements), cl::NDRange(local_size));
-
 	queue.enqueueReadBuffer(buffer_B, CL_TRUE, 0, vector_size, &outputFloat[0]);
 
 	return outputFloat;
@@ -137,7 +128,7 @@ int main(int argc, char **argv) {
 			//read in the valid dataset 
 			ifstream dataset("temp_lincolnshire_short.txt");
 		
-			//if dataset is open, read file line by line - specifying each seperate node {Station, Year, Month, Day, Time, Temperature}
+			//if dataset is open, read file line by line - specifying each seperate node {Station, Year, Month, Day, Time, Temperature} and putting into declared vector 
 			if (dataset.is_open())
 				cout << "Reading File...\n";
 			{
@@ -152,11 +143,11 @@ int main(int argc, char **argv) {
 							switch (space)
 							{
 							case 1:
-								station.push_back(word);
+								station.push_back(word); //push_back is used to add each variable to the end of the specified vector
 								word = "";
 								break;
 							case 2:
-								year.push_back(stoi(word));
+								year.push_back(stoi(word)); //stoi is used to convert a string to an int value
 								word = "";
 								break;
 							case 3:
@@ -172,18 +163,18 @@ int main(int argc, char **argv) {
 								word = "";
 								break;
 							case 6:
-								temp = int(stof(word) * 10);
+								temp = int(stof(word) * 10); //stof is used to convert a string to a float value
 								temperature.push_back(temp);
 								space = 0;
 								word = "";
 								break;
 							default:
 								break;
-							}
-
 						}
+
 					}
 				}
+			}
 		}
 
 		size_t vector_elements = temperature.size();//number of elements
@@ -191,15 +182,6 @@ int main(int argc, char **argv) {
 
 		size_t local_size = (64, 1); 
 		size_t padding_size = temperature.size() % local_size;
-	
-		//if the input vector is not a multiple of the local_size
-		//insert additional neutral elements (0 for addition) so that the total will not be affected (make work for my working set of data)
-		if (padding_size) {
-		//create an extra vector with neutral values
-		std::vector<int> A_ext(local_size-padding_size, 0);
-		//append that extra vector to our input
-		temperature.insert(temperature.end(), A_ext.begin(), A_ext.end());
-		}
 		
 		//host - output
 		std::vector<int> outputList(vector_elements);
@@ -260,6 +242,7 @@ int main(int argc, char **argv) {
 				std::cout << "  Min \t         Max         No. Values" << std::endl;
 				std::cout << " _____          _____        __________ \n" << std::endl;
 				 
+				//Calculates the Minimum and Maximum Range of Histogram with a user defined bin value and the total in that bin
 				for (int i = 1; i < binNo + 1; i++)
 				{
 					std::cout << std::fixed << std::setprecision(2) << "  " << ((minVal + ((i - 1)*binIncrement)) / 10) << "    \t" << ((minVal + (i*binIncrement)) / 10) << " \t   =   \t" << (outputList[i - 1]) << std::endl;

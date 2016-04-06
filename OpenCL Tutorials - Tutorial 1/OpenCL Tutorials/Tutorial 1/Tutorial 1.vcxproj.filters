@@ -25,7 +25,7 @@
     </Intel_OpenCL_Build_Rules>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Tutorial 1.cpp">
+    <ClCompile Include="Tutorial1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

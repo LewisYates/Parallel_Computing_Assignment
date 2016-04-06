@@ -182,7 +182,7 @@
     <Intel_OpenCL_Build_Rules Include="my_kernels.cl" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Tutorial 1.cpp" />
+    <ClCompile Include="Tutorial1.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

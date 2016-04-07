@@ -179,10 +179,10 @@
     <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
-    <Intel_OpenCL_Build_Rules Include="my_kernels.cl" />
+    <Intel_OpenCL_Build_Rules Include="GPUKernels.cl" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Tutorial1.cpp" />
+    <ClCompile Include="CPU.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
